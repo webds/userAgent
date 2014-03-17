@@ -1,6 +1,6 @@
 // https://github.com/webschik/userAgent
 (function (window, document, navigator, undefined) {
-var ua = (navigator && navigator.userAgent) || "",
+var ua = ((navigator && navigator.userAgent) || "").toLowerCase(),
     ActiveXObjects = [
         'ShockwaveFlash.ShockwaveFlash',
         'AcroPDF.PDF',
@@ -94,6 +94,52 @@ var stringify = function (data) {
 
     return result;
 };
+var os = {
+    name: "",
+    isUnix: (/unix/).test(ua),
+    isLinux: (/linux/).test(ua),
+    isIrix: (/irix/).test(ua),
+    isMac: (/mac/).test(ua),
+    isSun: (/sun/).test(ua),
+    isFreeBSD: (/freebsd/).test(ua),
+    isWindows: (/win/).test(ua),
+    isWindowsPhone: (/windows\s+phone/).test(ua),
+    isIOS: (/ios/).test(ua),
+    isAndroid: (/android/).test(ua),
+    isTouch: (/touch|phone/).test(ua)
+};
+
+if (os.isUnix) {
+    os.name = "Unix";
+} else if (os.isLinux) {
+    os.name = "Linux";
+} else if (os.isIrix) {
+    os.name = "Irix";
+} else if (os.isMac) {
+    os.name = "MacOS";
+} else if (os.isSun) {
+    os.name = "SunOS";
+} else if (os.isFreeBSD) {
+    os.name = "FreeBSD";
+} else if (os.isWindows) {
+    if (/95/.test(ua)) {
+        os.name = "Windows 95";
+    } else if (/98/.test(ua)) {
+        os.name = "Windows 98";
+    } else if (/2000/.test(ua)) {
+        os.name = "Windows 2000";
+    } else if (/windows\s+nt\s+6\.1/.test(ua)) {
+        os.name = "Windows 7";
+    } else if (/windows\s+nt\s+6\.2/.test(ua)) {
+        os.name = "Windows 8";
+    } else if (/windows\s+nt\s+6\.0/.test(ua)) {
+        os.name = "Windows Vista";
+    } else if (/Windows/.test(ua)) {
+        os.name = "Windows XP";
+    } else {
+        os.name = "Windows 3.1";
+    }
+}
 var version = (
         (/(?:msie\s([0-9a-z,.]+);)/).exec(ua) || // msie
         (/(?:version\/([0-9a-z,.]+))$/).exec(ua) || //opera
@@ -102,34 +148,47 @@ var version = (
         (/(?:version\/([0-9a-z,.]+)\s)/).exec(ua) || //safari
         []
     )[1] || null,
-    browser = {
-        version: version,
+    versionArr,
+    versionAsNumber = 0,
+    browser;
 
-        isIPhone: (/iphone/i).test(ua),
+if (version) {
+    // (14.0b.1)
+    versionArr = version.replace(/[^0-9\.,]/, '').split(/[\.,]/);
+    versionAsNumber = +(versionArr.shift() + '.' + versionArr.join('')) || versionAsNumber;
+}
 
-        isIPad: (/ipad/i).test(ua),
+browser = {
+    version: version,
+    versionAsNumber: versionAsNumber,
 
-        isIPod: (/ipod/i).test(ua),
+    isIPhone: (/iphone/).test(ua),
 
-        isIPadWebView: (/applewebkit/i).test(ua) && (/mobile/i).test(ua),
+    isIPad: (/ipad/).test(ua),
 
-        isAndroidDevice: (/android/i).test(ua),
+    isIPod: (/ipod/).test(ua),
 
-        isWindowsMobileDevice: (/windows\s+phone/i).test(ua),
+    isIPadWebView: (/applewebkit/).test(ua) && (/mobile/).test(ua),
 
-        isOpera: (/'opera'/i).test(ua),
+    isOpera: (/'opera'/).test(ua),
 
-        isChrome: (/chrome/i).test(ua),
+    isChrome: (/chrome/).test(ua),
 
-        isFireFox: (/firefox/).test(ua),
+    isFireFox: (/firefox/).test(ua),
 
-        isIE: (/msie/).test(ua),
+    isIE: (/msie/).test(ua),
 
-        isSafari: (/safari/).test(ua)
-    };
+    isSafari: (/safari/).test(ua)
+};
 
-browser.isIOSDevice = browser.isIPad || browser.isIPod || browser.isIPhone || browser.isIPadWebView;
-browser.isMobileDevice = browser.isIOSDevice || browser.isAndroidDevice || browser.isWindowsMobileDevice;
+browser.isMobileDevice = browser.isIPad ||
+    browser.isIPod ||
+    browser.isIPhone ||
+    browser.isIPadWebView ||
+    os.isAndroid ||
+    os.isIOS ||
+    os.isWindowsPhone ||
+    os.isTouch;
 var collect = function (success, error) {
     var i,
         obj,
@@ -287,53 +346,11 @@ var network = {
         webRTCDetectIP(success, error);
     }
 };
-var os = {
-    name: "",
-    isUnix: (/unix/i).test(ua),
-    isLinux: (/linux/i).test(ua),
-    isIrix: (/irix/i).test(ua),
-    isMac: (/mac/i).test(ua),
-    isSun: (/sun/i).test(ua),
-    isFreeBSD: (/freebsd/i).test(ua),
-    isWindows: (/win/i).test(ua),
-    isTouch: (/touch/i).test(ua)
-};
-
-if (os.isUnix) {
-    os.name = "Unix";
-} else if (os.isLinux) {
-    os.name = "Linux";
-} else if (os.isIrix) {
-    os.name = "Irix";
-} else if (os.isMac) {
-    os.name = "MacOS";
-} else if (os.isSun) {
-    os.name = "SunOS";
-} else if (os.isFreeBSD) {
-    os.name = "FreeBSD";
-} else if (os.isWindows) {
-    if (/95/.test(ua)) {
-        os.name = "Windows 95";
-    } else if (/98/.test(ua)) {
-        os.name = "Windows 98";
-    } else if (/2000/.test(ua)) {
-        os.name = "Windows 2000";
-    } else if (/windows\s+nt\s+6\.1/i.test(ua)) {
-        os.name = "Windows 7";
-    } else if (/windows\s+nt\s+6\.2/i.test(ua)) {
-        os.name = "Windows 8";
-    } else if (/windows\s+nt\s+6\.0/i.test(ua)) {
-        os.name = "Windows Vista";
-    } else if (/Windows/.test(ua)) {
-        os.name = "Windows XP";
-    } else {
-        os.name = "Windows 3.1";
-    }
-}
 var support = {
     svg: !!document.createElementNS && !!document.createElementNS('http://www.w3.org/2000/svg', "svg").createSVGRect
 };
 var userAgent = {
+    language: (navigator && (navigator.systemLanguage || navigator.language.split('-')[0])).toLowerCase() || "",
     browser: browser,
     os: os,
     network: network,

@@ -4,17 +4,7 @@
     <title></title>
     <script src="../userAgent.0.0.1.js"></script>
     <script>
-        userAgent.getKey(function (key) {
-            console.log('key:', key);
-        }, function () {
-            console.log('key:error');
-        });
-
-        userAgent.collect(function (data) {
-            console.log('collect:', data);
-        }, function () {
-            console.log('collect:error');
-        });
+        console.log("browser version:", userAgent.browser.version, userAgent.browser.versionAsNumber);
     </script>
 </head>
 <body>

@@ -1,4 +1,4 @@
-var ua = (navigator && navigator.userAgent) || "",
+var ua = ((navigator && navigator.userAgent) || "").toLowerCase(),
     ActiveXObjects = [
         'ShockwaveFlash.ShockwaveFlash',
         'AcroPDF.PDF',

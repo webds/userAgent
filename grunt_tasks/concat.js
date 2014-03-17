@@ -14,11 +14,11 @@ module.exports = function (grunt) {
                 'src/def.js',
                 'src/getSimpleObject.js',
                 'src/stringify.js',
+                'src/os.js',
                 'src/browser.js',
                 'src/collect.js',
                 'src/getKey.js',
                 'src/network.js',
-                'src/os.js',
                 'src/support.js',
                 'src/main.js'
             ],

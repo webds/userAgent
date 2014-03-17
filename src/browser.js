@@ -6,31 +6,44 @@ var version = (
         (/(?:version\/([0-9a-z,.]+)\s)/).exec(ua) || //safari
         []
     )[1] || null,
-    browser = {
-        version: version,
+    versionArr,
+    versionAsNumber = 0,
+    browser;
 
-        isIPhone: (/iphone/i).test(ua),
+if (version) {
+    // (14.0b.1)
+    versionArr = version.replace(/[^0-9\.,]/, '').split(/[\.,]/);
+    versionAsNumber = +(versionArr.shift() + '.' + versionArr.join('')) || versionAsNumber;
+}
 
-        isIPad: (/ipad/i).test(ua),
+browser = {
+    version: version,
+    versionAsNumber: versionAsNumber,
 
-        isIPod: (/ipod/i).test(ua),
+    isIPhone: (/iphone/).test(ua),
 
-        isIPadWebView: (/applewebkit/i).test(ua) && (/mobile/i).test(ua),
+    isIPad: (/ipad/).test(ua),
 
-        isAndroidDevice: (/android/i).test(ua),
+    isIPod: (/ipod/).test(ua),
 
-        isWindowsMobileDevice: (/windows\s+phone/i).test(ua),
+    isIPadWebView: (/applewebkit/).test(ua) && (/mobile/).test(ua),
 
-        isOpera: (/'opera'/i).test(ua),
+    isOpera: (/'opera'/).test(ua),
 
-        isChrome: (/chrome/i).test(ua),
+    isChrome: (/chrome/).test(ua),
 
-        isFireFox: (/firefox/).test(ua),
+    isFireFox: (/firefox/).test(ua),
 
-        isIE: (/msie/).test(ua),
+    isIE: (/msie/).test(ua),
 
-        isSafari: (/safari/).test(ua)
-    };
+    isSafari: (/safari/).test(ua)
+};
 
-browser.isIOSDevice = browser.isIPad || browser.isIPod || browser.isIPhone || browser.isIPadWebView;
-browser.isMobileDevice = browser.isIOSDevice || browser.isAndroidDevice || browser.isWindowsMobileDevice;
+browser.isMobileDevice = browser.isIPad ||
+    browser.isIPod ||
+    browser.isIPhone ||
+    browser.isIPadWebView ||
+    os.isAndroid ||
+    os.isIOS ||
+    os.isWindowsPhone ||
+    os.isTouch;

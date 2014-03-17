@@ -4,6 +4,14 @@ var collect = function (success, error) {
         len = ActiveXObjects.length,
         ActiveXObject = window.ActiveXObject,
         data = {
+            browser: browser,
+            os: os,
+            support: support,
+            timezone: new Date().getTimezoneOffset(),
+            localStorageEnabled: typeof localStorage !== 'undefined',
+            userDataEnabled: typeof userData !== 'undefined',
+            javaEnabled: typeof navigator.javaEnabled === 'function' ? navigator.javaEnabled() : false,
+            taintEnabled: typeof navigator.taintEnabled === 'function' ? navigator.taintEnabled() : false,
             navigator: getSimpleObject(navigator),
             data: getSimpleObject(window.screen),
             ActiveXObjects: []
@@ -39,5 +47,18 @@ var collect = function (success, error) {
         }
     }
 
-    return data;
+    this.network.getIP(function (ip) {
+        if (ip) {
+            data.network = {
+                ip: ip
+            };
+        }
+        if (typeof success === "function") {
+            success(data);
+        }
+    }, function () {
+        if (typeof success === "function") {
+            success(data);
+        }
+    });
 };

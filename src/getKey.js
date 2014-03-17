@@ -1,9 +1,7 @@
 var getKey = function (success, error) {
-    var key = "";
-
     this.collect(function (data) {
-
+        if (typeof success === 'function') {
+            success(stringify(data));
+        }
     }, error);
-
-    return key;
 };

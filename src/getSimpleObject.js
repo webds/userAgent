@@ -3,7 +3,17 @@ var getSimpleObject = function (obj) {
         key;
 
     for (key in obj) {
-        if (obj.hasOwnProperty(key) && ((typeof obj !== "object" || obj === null) && !(obj instanceof Array))) {
+        if (
+            obj.hasOwnProperty(key) && (
+                (
+                    typeof obj[key] !== "object" ||
+                    obj[key] == null ||
+                    obj[key] instanceof Boolean ||
+                    obj[key] instanceof Number ||
+                    obj[key] instanceof String
+                )
+            )
+        ) {
             result[key] = obj[key];
         }
     }

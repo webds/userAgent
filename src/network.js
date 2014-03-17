@@ -1,27 +1,62 @@
 var grepSDP = function (sdp) {
-        var hosts = [];
-        sdp.split('\r\n').forEach(function (line) { // c.f. http://tools.ietf.org/html/rfc4566#page-39
-            if (~line.indexOf("a=candidate")) {     // http://tools.ietf.org/html/rfc4566#section-5.13
-                var parts = line.split(' '),        // http://tools.ietf.org/html/rfc5245#section-15.1
-                    addr = parts[4],
-                    type = parts[7];
+        var lines = sdp.split('\r\n'),
+            i,
+            parts,
+            type,
+            addresses = [],
+            address,
+            len = lines.length;
+
+        // c.f. http://tools.ietf.org/html/rfc4566#page-39
+        for (i = 0; i < len; i++) {
+            // http://tools.ietf.org/html/rfc4566#section-5.13
+            if (lines[i].indexOf("a=candidate") >= 0) {
+                // http://tools.ietf.org/html/rfc5245#section-15.1
+                parts = lines[i].split(' ');
+                address = parts[4];
+                type = parts[7];
                 if (type === 'host') {
-                    updateDisplay(addr);
+                    addresses.push(address);
                 }
-            } else if (~line.indexOf("c=")) {       // http://tools.ietf.org/html/rfc4566#section-5.7
-                var parts = line.split(' '),
-                    addr = parts[2];
-                updateDisplay(addr);
+            } else {
+                // http://tools.ietf.org/html/rfc4566#section-5.7
+                if (lines[i].indexOf("c=") >= 0) {
+                    parts = lines[i].split(' ');
+                    address = parts[2];
+                    addresses.push(address);
+                }
             }
-        });
+        }
+
+        return addresses;
     },
     webRTCDetectIP = function (success, error) {
         // window.RTCPeerConnection is "not a constructor" in FF22/23
         var isFF = !!window.mozRTCPeerConnection,
-            RTCPeerConnection = window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+            rtc,
+            activeCallback = 2,
+            addresses = [],
+            blackList = ["0.0.0.0"],
+            RTCPeerConnection = window.webkitRTCPeerConnection || window.mozRTCPeerConnection,
+            updateAddresses = function (addrs) {
+                var i,
+                    len = addrs.length;
+
+                for (i = 0; i < len; i++) {
+                    if (addresses.indexOf(addrs[i]) < 0 && blackList.indexOf(addrs[i]) < 0) {
+                        addresses.push(addrs[i]);
+                    }
+                }
+
+                activeCallback--;
+
+                if (!activeCallback && typeof success === "function") {
+                    success(addresses[0]);
+                }
+            };
 
         if (RTCPeerConnection) {
-            var rtc = new RTCPeerConnection({
+            rtc = new RTCPeerConnection({
                 iceServers: []
             });
 
@@ -34,32 +69,18 @@ var grepSDP = function (sdp) {
 
             rtc.onicecandidate = function (evt) {
                 if (evt.candidate) {
-                    grepSDP(evt.candidate.candidate);
+                    updateAddresses(grepSDP(evt.candidate.candidate));
                 }
             };
             rtc.createOffer(function (offerDesc) {
-                grepSDP(offerDesc.sdp);
+                updateAddresses(grepSDP(offerDesc.sdp));
                 rtc.setLocalDescription(offerDesc);
-            }, function (e) {
-
-            });
-
-            var addrs = Object.create(null);
-            addrs["0.0.0.0"] = false;
-            function updateDisplay(newAddr) {
-                if (newAddr in addrs) {
-                    return;
-                } else {
-                    addrs[newAddr] = true;
-                }
-                var displayAddrs = Object.keys(addrs).filter(function (k) { return addrs[k]; });
-                document.getElementById('list').textContent = displayAddrs.join(" or perhaps ") || "n/a";
-            }
+            }, error);
         }
     };
 
 var network = {
     getIP: function (success, error) {
-
+        webRTCDetectIP(success, error);
     }
 };
